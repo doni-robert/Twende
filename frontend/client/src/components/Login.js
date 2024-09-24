@@ -1,25 +1,17 @@
-// Login.js
-
 import React from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
-
-    const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-    const drfClientId = process.env.REACT_APP_DRF_CLIENT_ID;
-    const drfClientSecret = process.env.REACT_APP_DRF_CLIENT_SECRET;
+const Login = ({ setIsAuthenticated }) => {
+    const navigate = useNavigate();  // Initialize useNavigate
     const baseURL = "http://localhost:8000";
+
     async function handleGoogleLogin(credentialResponse) {
-        const backend = "google-oauth2";
-        const grant_type = "convert_token";
-        const dateToSend = {
+        const dataToSend = {
             token: credentialResponse.access_token,
-            // backend: backend,
-            // grant_type: grant_type,
-            // client_id: drfClientId,
-            // client_secret: drfClientSecret,
         };
-        const newStringData = (JSON.stringify(dateToSend));
+        const newStringData = JSON.stringify(dataToSend);
+
         const response = await fetch(`${baseURL}/auth/google-login/`, {
             method: 'POST',
             headers: {
@@ -27,21 +19,26 @@ const Login = () => {
             },
             body: newStringData,
         });
+
         const dataFromApi = await response.json();
+
+        setIsAuthenticated(true);
         localStorage.setItem("access_token", dataFromApi.access_token);
         localStorage.setItem("refresh_token", dataFromApi.refresh_token);
+        console.log(dataFromApi.access_token, dataFromApi.refresh_token)
+
+        // Navigate to create-post after successful login
+        navigate('/create-post');
     }
+
     const login = useGoogleLogin({
         onSuccess: tokenResponse => handleGoogleLogin(tokenResponse),
-        
     });
 
     return (
-
         <button onClick={() => login()}>
             Sign in with Google 🚀
         </button>
-
     );
 };
 

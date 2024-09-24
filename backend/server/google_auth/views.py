@@ -37,8 +37,14 @@ def google_login(request):
         # Generate JWT tokens for the authenticated user
         refresh = RefreshToken.for_user(user)
 
+        # Prepare response based on whether the user is newly created or already exists
+        if created:
+            message = "New user account created successfully"
+        else:
+            message = "User already exists. Logged in successfully"
+
         return JsonResponse({
-            "message": "Authentication successful",
+            "message": message,
             "user_info": {
                 'email': user.email,
                 'name': user.name,
@@ -49,4 +55,6 @@ def google_login(request):
         }, status=200)
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        # Log the error for debugging purposes (you can also log this to a file)
+        return JsonResponse({"error": f"Something went wrong: {str(e)}"}, status=500)
+
